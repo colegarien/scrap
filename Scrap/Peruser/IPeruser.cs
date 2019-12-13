@@ -9,6 +9,6 @@ namespace Scrap.Peruser
             return false;
         }
 
-        public void Peruse(IWebDriver driver);
+        public Model.Recipe Peruse(IWebDriver driver);
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using OpenQA.Selenium;
+using Scrap.Model;
 
 namespace Scrap.Peruser
 {
@@ -9,6 +11,7 @@ namespace Scrap.Peruser
     {
 
         // Based on https://thesaltymarshmallow.com/homemade-belgian-waffle-recipe/
+        // Also https://demo.wprecipemaker.com/adjustable-servings/
         public static bool CanPeruse(IWebDriver driver)
         {
             try
@@ -28,78 +31,162 @@ namespace Scrap.Peruser
             return driver.FindElement(By.ClassName("wprm-recipe-container"));
         }
 
-        public void Peruse(IWebDriver driver)
+        private string GetGuts(IWebElement element, string className)
+        {
+            var firstElement = element.FindElements(By.ClassName(className))
+                .FirstOrDefault();
+            var text = "";
+            if (firstElement != null)
+            {
+                text = firstElement.FindElements(By.ClassName(className))
+                    .FirstOrDefault()?.GetAttribute("innerHTML")
+                    ?? firstElement.GetAttribute("innerHTML");
+            }
+
+            text = text.Replace("&amp;", "&")
+                .Replace("&nbsp;", " ")
+                .Replace("<span style=\"display: block;\">", "")
+                .Replace("</span>", "")
+                .Replace("</a>", "")
+                .Replace("  ", " ")
+                .Trim();
+
+            // remove links
+            text = Regex.Replace(text, "<a .*>", "");
+
+            return text;
+        }
+
+        public Recipe Peruse(IWebDriver driver)
         {
             var container = FindContainerElement(driver);
 
-            var source = driver.Url;
-            var name = container.FindElement(By.ClassName("wprm-recipe-name")).GetAttribute("innerHTML").Trim();
-            var summary = container.FindElement(By.ClassName("wprm-recipe-summary")).GetAttribute("innerHTML").Trim();
-            var notes = container.FindElement(By.ClassName("wprm-recipe-notes")).GetAttribute("innerHTML").Trim();
-
-            var course = container.FindElement(By.ClassName("wprm-recipe-course")).GetAttribute("innerHTML").Trim();
-            var cuisine = container.FindElement(By.ClassName("wprm-recipe-cuisine")).GetAttribute("innerHTML").Trim();
-            var servingSize = container.FindElement(By.ClassName("wprm-recipe-servings")).GetAttribute("innerHTML").Trim();
-
-            var prepTime = new Model.Time { 
-                Amount = container.FindElement(By.ClassName("wprm-recipe-prep_time")).GetAttribute("innerHTML").Trim(),
-                Unit = container.FindElement(By.ClassName("wprm-recipe-prep_time-unit")).GetAttribute("innerHTML").Trim()
-            };
-            var cookTime = new Model.Time
+            return new Recipe
             {
-                Amount = container.FindElement(By.ClassName("wprm-recipe-cook_time")).GetAttribute("innerHTML").Trim(),
-                Unit = container.FindElement(By.ClassName("wprm-recipe-cook_time-unit")).GetAttribute("innerHTML").Trim()
+                Name = GetGuts(container, "wprm-recipe-name"),
+                Source = driver.Url,
+                Summary = GetGuts(container, "wprm-recipe-summary"),
+                Tags = GetTags(container),
+                ServingSize = GetGuts(container, "wprm-recipe-servings"),
+                TimeGroup = GetTimeGroup(container),
+                IngredientGroups = GetIngredientGroups(container),
+                DirectionGroups = GetDirectionGroups(container),
+                Notes = GetGuts(container, "wprm-recipe-notes")
             };
-            var totalTime = new Model.Time
+        }
+
+        private List<Tag> GetTags(IWebElement container)
+        {
+            var tags = new List<Tag>();
+            var courseTag = new Tag
             {
-                Amount = container.FindElement(By.ClassName("wprm-recipe-total_time")).GetAttribute("innerHTML").Trim(),
-                Unit = container.FindElement(By.ClassName("wprm-recipe-total_time-unit")).GetAttribute("innerHTML").Trim()
+                Label = "Course",
+                Value = GetGuts(container, "wprm-recipe-course")
+            };
+            var cuisineTag = new Tag
+            {
+                Label = "Cuisine",
+                Value = GetGuts(container, "wprm-recipe-cuisine")
             };
 
-            var ingredientElements = container.FindElements(By.ClassName("wprm-recipe-ingredient"));
-            var ingredients = new List<Model.Ingredient>();
-            foreach (var element in ingredientElements)
+            if (courseTag.Value != "")
             {
-                ingredients.Add(new Model.Ingredient
+                tags.Add(courseTag);
+            }
+            if (cuisineTag.Value != "")
+            {
+                tags.Add(cuisineTag);
+            }
+
+            return tags;
+        }
+
+        private TimeGroup GetTimeGroup(IWebElement container)
+        {
+            var timeGroup = new TimeGroup
+            {
+                Times = new List<Time>()
+            };
+
+            var prepTime = new Time
+            {
+                Label = "Prep Time",
+                Amount = GetGuts(container, "wprm-recipe-prep_time"),
+                Unit = GetGuts(container, "wprm-recipe-prep_time-unit")
+            };
+            var cookTime = new Time
+            {
+                Label = "Cook Time",
+                Amount = GetGuts(container, "wprm-recipe-cook_time"),
+                Unit = GetGuts(container, "wprm-recipe-cook_time-unit")
+            };
+            var totalTime = new Time
+            {
+                Label = "Total Time",
+                Amount = GetGuts(container, "wprm-recipe-total_time"),
+                Unit = GetGuts(container, "wprm-recipe-total_time-unit")
+            };
+
+            if (prepTime.Amount != "")
+            {
+                timeGroup.Times.Add(prepTime);
+            }
+            if (cookTime.Amount != "")
+            {
+                timeGroup.Times.Add(cookTime);
+            }
+            if (totalTime.Amount != "")
+            {
+                timeGroup.Times.Add(totalTime);
+            }
+
+            return timeGroup;
+        }
+
+        private List<IngredientGroup> GetIngredientGroups(IWebElement container)
+        {
+            var ingredientGroups = new List<IngredientGroup>();
+            var ingredientGroupElements = container.FindElements(By.ClassName("wprm-recipe-ingredient-group"));
+            foreach (var groupElement in ingredientGroupElements)
+            {
+                var label = GetGuts(groupElement, "wprm-recipe-group-name");
+
+                var ingredientElements = groupElement.FindElements(By.ClassName("wprm-recipe-ingredient"));
+                var ingredients = new List<Ingredient>();
+                foreach (var element in ingredientElements)
                 {
-                    Amount = element.FindElement(By.ClassName("wprm-recipe-ingredient-amount")).GetAttribute("innerHTML").Trim(),
-                    Unit = element.FindElements(By.ClassName("wprm-recipe-ingredient-unit")).FirstOrDefault()?.GetAttribute("innerHTML").Trim() ?? "",
-                    Name = element.FindElement(By.ClassName("wprm-recipe-ingredient-name")).GetAttribute("innerHTML").Trim()
-                });
+                    ingredients.Add(new Ingredient
+                    {
+                        Amount = GetGuts(element, "wprm-recipe-ingredient-amount"),
+                        Unit = GetGuts(element, "wprm-recipe-ingredient-unit"),
+                        Name = GetGuts(element, "wprm-recipe-ingredient-name"),
+                        Note = GetGuts(element, "wprm-recipe-ingredient-notes"),
+                    });
+                }
+                ingredientGroups.Add(new IngredientGroup { Label = label, Ingredients = ingredients });
             }
 
-            var directionElements = container.FindElements(By.ClassName("wprm-recipe-instruction"));
-            var directions = new List<string>();
-            foreach (var element in directionElements)
+            return ingredientGroups;
+        }
+
+        private List<DirectionGroup> GetDirectionGroups(IWebElement container)
+        {
+            var directionGroups = new List<DirectionGroup>();
+            var directionGroupElements = container.FindElements(By.ClassName("wprm-recipe-instruction-group"));
+            foreach (var groupElement in directionGroupElements)
             {
-                directions.Add(element.FindElement(By.ClassName("wprm-recipe-instruction-text")).GetAttribute("innerHTML").Trim());
+                var label = GetGuts(groupElement, "wprm-recipe-group-name");
+
+                var directionElements = container.FindElements(By.ClassName("wprm-recipe-instruction"));
+                var directions = new List<Direction>();
+                foreach (var element in directionElements)
+                {
+                    directions.Add(new Direction { Text = GetGuts(element, "wprm-recipe-instruction-text") });
+                }
+                directionGroups.Add(new DirectionGroup { Label = label, Directions = directions });
             }
 
-            Console.WriteLine("Recipe: " + name);
-            Console.WriteLine("Source: " + source);
-            Console.WriteLine("Summary: " + summary);
-
-            Console.WriteLine("Course: " + course);
-            Console.WriteLine("Cuisine: " + cuisine);
-            Console.WriteLine("Serving Size: " + servingSize);
-
-            Console.WriteLine("Prep Time: " + prepTime.Amount + " " + prepTime.Unit);
-            Console.WriteLine("Cook Time: " + cookTime.Amount + " " + cookTime.Unit);
-            Console.WriteLine("Total Time: " + totalTime.Amount + " " + totalTime.Unit);
-
-            Console.WriteLine("Ingredients: ");
-            foreach(var ingredient in ingredients)
-            {
-                Console.WriteLine("    " + ingredient.Amount + " " + ingredient.Unit + " " + ingredient.Name);
-            }
-
-            Console.WriteLine("Directions: ");
-            foreach (var direction in directions)
-            {
-                Console.WriteLine("    " + direction);
-            }
-            Console.WriteLine("Notes: " + notes);
-
+            return directionGroups;
         }
     }
 }
