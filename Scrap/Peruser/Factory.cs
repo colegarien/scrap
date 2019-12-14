@@ -11,6 +11,10 @@ namespace Scrap.Peruser
             {
                 return new WPRecipeMaker();
             }
+            else if (WPUltimate.CanPersue(driver))
+            {
+                return new WPUltimate();
+            }
 
             throw new NotImplementedException();
         }

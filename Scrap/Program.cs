@@ -18,7 +18,7 @@ namespace Scrap
             var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
             IWebDriver driver = new ChromeDriver(serice, options);
 
-            var targetRecipeUrl = "https://thesaltymarshmallow.com/homemade-pesto-recipe/";
+            var targetRecipeUrl = "https://www.wpultimaterecipe.com/docs/demo/";
             driver.Navigate().GoToUrl(targetRecipeUrl);
 
             var persuerFactory = new Peruser.Factory();
