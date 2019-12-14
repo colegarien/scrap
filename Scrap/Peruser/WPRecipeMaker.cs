@@ -7,75 +7,27 @@ using Scrap.Model;
 
 namespace Scrap.Peruser
 {
+
+    // Based on https://thesaltymarshmallow.com/homemade-belgian-waffle-recipe/
+    // Also https://demo.wprecipemaker.com/adjustable-servings/
     class WPRecipeMaker : IPeruser
     {
-
-        // Based on https://thesaltymarshmallow.com/homemade-belgian-waffle-recipe/
-        // Also https://demo.wprecipemaker.com/adjustable-servings/
-        public static bool CanPeruse(IWebDriver driver)
-        {
-            try
-            {
-                FindContainerElement(driver);
-            } 
-            catch (NoSuchElementException)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static IWebElement FindContainerElement(IWebDriver driver)
+        IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
             return driver.FindElement(By.ClassName("wprm-recipe-container"));
         }
 
-        private string GetGuts(IWebElement element, string className)
+        string IPeruser.GetName(IWebElement container)
         {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.GetAttribute("innerHTML")
-                    ?? firstElement.GetAttribute("innerHTML");
-            }
-
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-
-            return text;
+            return GetGuts(container, "wprm-recipe-name");
         }
 
-        public Recipe Peruse(IWebDriver driver)
+        string IPeruser.GetSummary(IWebElement container)
         {
-            var container = FindContainerElement(driver);
-
-            return new Recipe
-            {
-                Name = GetGuts(container, "wprm-recipe-name"),
-                Source = driver.Url,
-                Summary = GetGuts(container, "wprm-recipe-summary"),
-                Tags = GetTags(container),
-                ServingSize = GetGuts(container, "wprm-recipe-servings"),
-                TimeGroup = GetTimeGroup(container),
-                IngredientGroups = GetIngredientGroups(container),
-                DirectionGroups = GetDirectionGroups(container),
-                Notes = GetGuts(container, "wprm-recipe-notes")
-            };
+            return GetGuts(container, "wprm-recipe-summary");
         }
 
-        private List<Tag> GetTags(IWebElement container)
+        List<Tag> IPeruser.GetTags(IWebElement container)
         {
             var tags = new List<Tag>();
             var courseTag = new Tag
@@ -101,7 +53,12 @@ namespace Scrap.Peruser
             return tags;
         }
 
-        private TimeGroup GetTimeGroup(IWebElement container)
+        string IPeruser.GetServingSize(IWebElement container)
+        {
+            return GetGuts(container, "wprm-recipe-servings");
+        }
+
+        TimeGroup IPeruser.GetTimeGroup(IWebElement container)
         {
             var timeGroup = new TimeGroup
             {
@@ -143,7 +100,7 @@ namespace Scrap.Peruser
             return timeGroup;
         }
 
-        private List<IngredientGroup> GetIngredientGroups(IWebElement container)
+        List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
             var ingredientGroups = new List<IngredientGroup>();
             var ingredientGroupElements = container.FindElements(By.ClassName("wprm-recipe-ingredient-group"));
@@ -169,7 +126,7 @@ namespace Scrap.Peruser
             return ingredientGroups;
         }
 
-        private List<DirectionGroup> GetDirectionGroups(IWebElement container)
+        List<DirectionGroup> IPeruser.GetDirectionGroups(IWebElement container)
         {
             var directionGroups = new List<DirectionGroup>();
             var directionGroupElements = container.FindElements(By.ClassName("wprm-recipe-instruction-group"));
@@ -187,6 +144,44 @@ namespace Scrap.Peruser
             }
 
             return directionGroups;
+        }
+
+        string IPeruser.GetNotes(IWebElement container)
+        {
+            return GetGuts(container, "wprm-recipe-notes");
+        }
+
+
+
+
+        private string GetGuts(IWebElement element, string className)
+        {
+            var firstElement = element.FindElements(By.ClassName(className))
+                .FirstOrDefault();
+            var text = "";
+            if (firstElement != null)
+            {
+                text = firstElement.FindElements(By.ClassName(className))
+                    .FirstOrDefault()?.GetAttribute("innerHTML")
+                    ?? firstElement.GetAttribute("innerHTML");
+            }
+
+            text = text.Replace("&amp;", "&")
+                .Replace("&nbsp;", " ")
+                .Replace("<span style=\"display: block;\">", "")
+                .Replace("</span>", "")
+                .Replace("</a>", "")
+                .Replace("<p>", "")
+                .Replace("</p>", "")
+                .Replace("<br>", "")
+                .Replace("</br>", "")
+                .Replace("  ", " ")
+                .Trim();
+
+            // remove links
+            text = Regex.Replace(text, "<a .*>", "");
+
+            return text;
         }
     }
 }

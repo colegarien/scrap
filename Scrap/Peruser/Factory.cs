@@ -5,15 +5,20 @@ namespace Scrap.Peruser
 {
     class Factory
     {
+        IPeruser[] perusers;
+        public Factory()
+        {
+            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes() };
+        }
+
         public IPeruser GetPeruser(IWebDriver driver)
         {
-            if (WPRecipeMaker.CanPeruse(driver))
+            foreach(var peruser in perusers)
             {
-                return new WPRecipeMaker();
-            }
-            else if (WPUltimate.CanPersue(driver))
-            {
-                return new WPUltimate();
+                if (peruser.CanPeruse(driver))
+                {
+                    return peruser;
+                }
             }
 
             throw new NotImplementedException();

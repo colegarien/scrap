@@ -18,7 +18,7 @@ namespace Scrap
             var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
             IWebDriver driver = new ChromeDriver(serice, options);
 
-            var targetRecipeUrl = "https://www.wpultimaterecipe.com/docs/demo/";
+            var targetRecipeUrl = "https://cookieandkate.com/best-carrot-cake-recipe/";
             driver.Navigate().GoToUrl(targetRecipeUrl);
 
             var persuerFactory = new Peruser.Factory();
@@ -72,7 +72,11 @@ namespace Scrap
                     Console.WriteLine("    " + direction.Text);
                 }
             }
-            Console.WriteLine("Notes: " + recipe.Notes);
+
+            if (recipe.Notes != "")
+            {
+                Console.WriteLine("Notes: " + recipe.Notes);
+            }
         }
     }
 }

@@ -3,89 +3,29 @@ using Scrap.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Scrap.Peruser
 {
+    // Based on https://www.wpultimaterecipe.com/docs/demo/
     class WPUltimate : IPeruser
     {
-        // Based on https://www.wpultimaterecipe.com/docs/demo/
-        public static bool CanPersue(IWebDriver driver)
-        {
-            try
-            {
-                FindContainerElement(driver);
-            }
-            catch (NoSuchElementException)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static IWebElement FindContainerElement(IWebDriver driver)
+        IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
             return driver.FindElement(By.ClassName("wpurp-container"));
         }
 
-        private string GetGuts(IWebElement element, string className)
+        string IPeruser.GetName(IWebElement container)
         {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.GetAttribute("innerHTML")
-                    ?? firstElement.GetAttribute("innerHTML");
-            }
-
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("<p>", "")
-                .Replace("</p>", "")
-                .Replace("<br>", "")
-                .Replace("</br>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-
-            return text;
+            return GetGuts(container, "wpurp-recipe-title");
         }
 
-        public Recipe Peruse(IWebDriver driver)
+        string IPeruser.GetSummary(IWebElement container)
         {
-            var container = FindContainerElement(driver);
-
-            return new Recipe
-            {
-                Name = GetGuts(container, "wpurp-recipe-title"),
-                Source = driver.Url,
-                Summary = GetGuts(container, "wpurp-recipe-description"),
-                Tags = GetTags(container),
-                ServingSize = GetServingSize(container),
-                TimeGroup = GetTimeGroup(container),
-                IngredientGroups = GetIngredientGroups(container),
-                DirectionGroups = GetDirectionGroups(container),
-                Notes = GetGuts(container, "wpurp-recipe-notes")
-            };
+            return GetGuts(container, "wpurp-recipe-description");
         }
 
-        private string GetServingSize(IWebElement container)
-        {
-            return container.FindElements(By.ClassName("advanced-adjust-recipe-servings"))
-                    .FirstOrDefault()?.GetAttribute("data-start-servings")
-                    ?? "";
-        }
-
-        private List<Tag> GetTags(IWebElement container)
+        List<Tag> IPeruser.GetTags(IWebElement container)
         {
             var tagsContainer = container.FindElement(By.ClassName("wpurp-recipe-tags"));
             var tagTables = tagsContainer.FindElements(By.TagName("table"));
@@ -107,7 +47,14 @@ namespace Scrap.Peruser
             return tags;
         }
 
-        private TimeGroup GetTimeGroup(IWebElement container)
+        string IPeruser.GetServingSize(IWebElement container)
+        {
+            return container.FindElements(By.ClassName("advanced-adjust-recipe-servings"))
+                    .FirstOrDefault()?.GetAttribute("data-start-servings")
+                    ?? "";
+        }
+
+        TimeGroup IPeruser.GetTimeGroup(IWebElement container)
         {
             var timeGroup = new TimeGroup
             {
@@ -149,7 +96,7 @@ namespace Scrap.Peruser
             return timeGroup;
         }
 
-        private List<IngredientGroup> GetIngredientGroups(IWebElement container)
+        List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
             var ingredientGroups = new List<IngredientGroup>();
             var ingredientGroupElements = container.FindElements(By.ClassName("wpurp-recipe-ingredient-container"));
@@ -175,7 +122,7 @@ namespace Scrap.Peruser
             return ingredientGroups;
         }
 
-        private List<DirectionGroup> GetDirectionGroups(IWebElement container)
+        List<DirectionGroup> IPeruser.GetDirectionGroups(IWebElement container)
         {
             var directionGroups = new List<DirectionGroup>();
             var directionGroupElements = container.FindElements(By.ClassName("wpurp-recipe-instruction-group-container"));
@@ -194,5 +141,44 @@ namespace Scrap.Peruser
 
             return directionGroups;
         }
+
+        string IPeruser.GetNotes(IWebElement container)
+        {
+            return GetGuts(container, "wpurp-recipe-notes");
+        }
+
+
+
+
+        private string GetGuts(IWebElement element, string className)
+        {
+            var firstElement = element.FindElements(By.ClassName(className))
+                .FirstOrDefault();
+            var text = "";
+            if (firstElement != null)
+            {
+                text = firstElement.FindElements(By.ClassName(className))
+                    .FirstOrDefault()?.GetAttribute("innerHTML")
+                    ?? firstElement.GetAttribute("innerHTML");
+            }
+
+            text = text.Replace("&amp;", "&")
+                .Replace("&nbsp;", " ")
+                .Replace("<span style=\"display: block;\">", "")
+                .Replace("</span>", "")
+                .Replace("</a>", "")
+                .Replace("<p>", "")
+                .Replace("</p>", "")
+                .Replace("<br>", "")
+                .Replace("</br>", "")
+                .Replace("  ", " ")
+                .Trim();
+
+            // remove links
+            text = Regex.Replace(text, "<a .*>", "");
+
+            return text;
+        }
+
     }
 }
