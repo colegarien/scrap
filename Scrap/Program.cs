@@ -15,10 +15,11 @@ namespace Scrap
             options.AddArgument("headless");
             options.AddArgument("disable-gpu");
             options.AddArgument("window-size=1024,768");
+            options.AddArgument("log-level=1");
             var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
             IWebDriver driver = new ChromeDriver(serice, options);
 
-            var targetRecipeUrl = "https://cookieandkate.com/best-carrot-cake-recipe/";
+            var targetRecipeUrl = "https://pinchofyum.com/sweet-potato-peanut-soup";
             driver.Navigate().GoToUrl(targetRecipeUrl);
 
             var persuerFactory = new Peruser.Factory();
@@ -75,7 +76,8 @@ namespace Scrap
 
             if (recipe.Notes != "")
             {
-                Console.WriteLine("Notes: " + recipe.Notes);
+                Console.WriteLine("Notes: ");
+                Console.WriteLine("    " + recipe.Notes);
             }
         }
     }

@@ -11,6 +11,7 @@ namespace Scrap.Peruser
     // BASED on https://cookieandkate.com/best-carrot-cake-recipe/#tasty-recipes-33706
     // AND https://cookiesandcups.com/perfect-snickerdoodles/
     // ALSO https://pinchofyum.com/sweet-potato-peanut-soup
+    // And https://cookiesandcups.com/perfect-snickerdoodles/
     class TastyRecipes : IPeruser
     {
         IWebElement IPeruser.FindContainerElement(IWebDriver driver)
@@ -25,7 +26,7 @@ namespace Scrap.Peruser
 
         string IPeruser.GetNotes(IWebElement container)
         {
-            return GetGuts(container, "tasty-recipes-notes");
+            return CleanText(container.FindElement(By.ClassName("tasty-recipes-notes")).Text);
         }
 
         string IPeruser.GetSummary(IWebElement container)
@@ -70,7 +71,7 @@ namespace Scrap.Peruser
 
         string IPeruser.GetServingSize(IWebElement container)
         {
-            return GetGuts(container, "tasty-recipes-yield");
+            return CleanText(container.FindElement(By.ClassName("tasty-recipes-yield")).Text.Replace("1x",""));
         }
 
         TimeGroup IPeruser.GetTimeGroup(IWebElement container)
@@ -119,6 +120,10 @@ namespace Scrap.Peruser
         {
             var directionGroups = new List<DirectionGroup>();
             var directionGroupElements = container.FindElements(By.ClassName("tasty-recipe-instructions"));
+            if(directionGroupElements.Count == 0)
+            {
+                directionGroupElements = container.FindElements(By.ClassName("tasty-recipes-instructions"));
+            }
             foreach (var groupElement in directionGroupElements)
             {
                 var label = "";
@@ -137,24 +142,38 @@ namespace Scrap.Peruser
 
         List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
+            var ingredientContainer = container.FindElements(By.ClassName("tasty-recipe-ingredients")).FirstOrDefault();
+            if (ingredientContainer == null)
+            {
+                ingredientContainer = container.FindElement(By.ClassName("tasty-recipes-ingredients"));
+            }
+
             var ingredientGroups = new List<IngredientGroup>();
-            var ingredientGroupElements = container.FindElements(By.ClassName("tasty-recipe-ingredients"));
+            var ingredientGroupElements = ingredientContainer.FindElements(By.TagName("ul"));
+            if (ingredientGroupElements.Count == 0)
+            {
+                ingredientGroupElements = ingredientContainer.FindElements(By.TagName("ol"));
+            }
             foreach (var groupElement in ingredientGroupElements)
             {
-                var label = ""; // TODO figure how to grab h4s
+                var label = GuessIngredientGroupLabel(ingredientContainer, groupElement);
 
                 var ingredientElements = groupElement.FindElements(By.TagName("li"));
                 var ingredients = new List<Ingredient>();
                 foreach (var element in ingredientElements)
                 {
                     var span = element.FindElements(By.TagName("span")).FirstOrDefault();
-                    var name = element.GetAttribute("innerHTML");
-                    name = CleanText(Regex.Replace(name, "<span .*data.*>.*</span>", ""));
+                    var name = element.Text;
+                    if(span != null)
+                    {
+                        var regex = new Regex(Regex.Escape(span.Text));
+                        name = regex.Replace(name, "", 1);
+                    }
                     ingredients.Add(new Ingredient
                     {
                         Amount = span?.GetAttribute("data-amount") ?? "",
                         Unit = span?.GetAttribute("data-unit") ?? "",
-                        Name = name,
+                        Name = CleanText(name),
                         Note = "",
                     });
                 }
@@ -162,6 +181,33 @@ namespace Scrap.Peruser
             }
 
             return ingredientGroups;
+        }
+
+        private string GuessIngredientGroupLabel(IWebElement ingredientContainer, IWebElement groupElement)
+        {
+            var label = "";
+            // Get all high-level elements in the big ingredient container
+            var children = ingredientContainer.FindElements(By.XPath("*"));
+            foreach (var child in children)
+            {
+                if (child.TagName == "h4")
+                {
+                    // Found a header!
+                    label = CleanText(child.Text);
+                }
+                if (child.Location == groupElement.Location)
+                {
+                    // Ran into the group in question, we are done looking
+                    break;
+                }
+                else if (child.TagName == "ul" || child.TagName == "ol")
+                {
+                    // Ran into a ingredient group that isn't the 'groupElement', clear any previusly found header
+                    label = "";
+                }
+            }
+
+            return label;
         }
 
 
@@ -175,8 +221,8 @@ namespace Scrap.Peruser
             if (firstElement != null)
             {
                 text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.GetAttribute("innerHTML")
-                    ?? firstElement.GetAttribute("innerHTML");
+                    .FirstOrDefault()?.Text
+                    ?? firstElement.Text;
             }
 
             return CleanText(text);
@@ -200,7 +246,7 @@ namespace Scrap.Peruser
             text = Regex.Replace(text, "<a .*>", "");
             text = Regex.Replace(text, "<span .*>", "");
 
-            return text;
+            return text.Trim();
         }
     }
 }
