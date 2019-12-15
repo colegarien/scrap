@@ -21,12 +21,19 @@ namespace Scrap
 
             var persuerFactory = new Peruser.Factory();
 
-            var targetRecipeUrl = "https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/";
-            driver.Navigate().GoToUrl(targetRecipeUrl);
+            try
+            {
+                var targetRecipeUrl = "https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/";
+                driver.Navigate().GoToUrl(targetRecipeUrl);
 
-            var peruser = persuerFactory.GetPeruser(driver);
-            var recipe = peruser.Peruse(driver);
-            RenderRecipe(recipe);
+                var peruser = persuerFactory.GetPeruser(driver);
+                var recipe = peruser.Peruse(driver);
+                RenderRecipe(recipe);
+            } 
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
             driver.Close();
         }
