@@ -23,7 +23,7 @@ namespace Scrap
 
             try
             {
-                var targetRecipeUrl = "https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/";
+                var targetRecipeUrl = "https://demo.wpzoom.com/recipe-card-blocks/2019/02/06/recipe-card-classic-style/";
                 driver.Navigate().GoToUrl(targetRecipeUrl);
 
                 var peruser = persuerFactory.GetPeruser(driver);
