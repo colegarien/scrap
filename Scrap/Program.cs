@@ -21,7 +21,7 @@ namespace Scrap
 
             var persuerFactory = new Peruser.Factory();
 
-            var targetRecipeUrl = "https://demo.ziprecipes.net/best-guacamole-ever/";
+            var targetRecipeUrl = "https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/";
             driver.Navigate().GoToUrl(targetRecipeUrl);
 
             var peruser = persuerFactory.GetPeruser(driver);

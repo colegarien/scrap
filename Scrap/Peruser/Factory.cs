@@ -8,7 +8,7 @@ namespace Scrap.Peruser
         IPeruser[] perusers;
         public Factory()
         {
-            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes(), new ZipRecipesZL(), new ZipRecipeZip() };
+            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes(), new ZipRecipesZL(), new ZipRecipeZip(), new CookedRecipe() };
         }
 
         public IPeruser GetPeruser(IWebDriver driver)
@@ -21,7 +21,7 @@ namespace Scrap.Peruser
                 }
             }
 
-            throw new NotImplementedException();
+            throw new NotImplementedException("No Peruser for " + driver.Url);
         }
     }
 }
