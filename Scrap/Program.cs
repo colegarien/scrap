@@ -6,6 +6,10 @@ namespace Scrap
 {
     class Program
     {
+        // TODO refactor existing plugins to be easier to maintain (abstract into utility functions and things)
+        // TODO Rename "Serving Size" to "Yield"
+        // Refactor things into a more portable class library
+        // Dependency Injection!?
 
         static void Main(string[] args)
         {
