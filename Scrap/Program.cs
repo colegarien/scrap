@@ -15,16 +15,16 @@ namespace Scrap
             options.AddArgument("headless");
             options.AddArgument("disable-gpu");
             options.AddArgument("window-size=1024,768");
-            options.AddArgument("log-level=1");
+            options.AddArgument("log-level=1"); // Warnings and up
             var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
             IWebDriver driver = new ChromeDriver(serice, options);
 
-            var targetRecipeUrl = "https://pinchofyum.com/sweet-potato-peanut-soup";
+            var persuerFactory = new Peruser.Factory();
+
+            var targetRecipeUrl = "https://demo.ziprecipes.net/best-guacamole-ever/";
             driver.Navigate().GoToUrl(targetRecipeUrl);
 
-            var persuerFactory = new Peruser.Factory();
             var peruser = persuerFactory.GetPeruser(driver);
-            
             var recipe = peruser.Peruse(driver);
             RenderRecipe(recipe);
 

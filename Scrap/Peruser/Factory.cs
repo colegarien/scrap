@@ -8,7 +8,7 @@ namespace Scrap.Peruser
         IPeruser[] perusers;
         public Factory()
         {
-            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes() };
+            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes(), new ZipRecipesZL(), new ZipRecipeZip() };
         }
 
         public IPeruser GetPeruser(IWebDriver driver)
