@@ -6,7 +6,6 @@ namespace Scrap
 {
     class Program
     {
-        // TODO refactor existing plugins to be easier to maintain (abstract into utility functions and things)
         // TODO Rename "Serving Size" to "Yield"
         // Refactor things into a more portable class library
         // Dependency Injection!?
@@ -27,7 +26,7 @@ namespace Scrap
 
             try
             {
-                var targetRecipeUrl = "https://demo.wpzoom.com/recipe-card-blocks/2019/02/06/recipe-card-classic-style/";
+                var targetRecipeUrl = "https://demo.wprecipemaker.com/recipe-taxonomies/";
                 driver.Navigate().GoToUrl(targetRecipeUrl);
 
                 var peruser = persuerFactory.GetPeruser(driver);

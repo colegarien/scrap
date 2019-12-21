@@ -1,68 +1,71 @@
 ﻿using OpenQA.Selenium;
 using Scrap.Model;
-using System;
+using Scrap.Peruser.Utilities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Scrap.Peruser
 {
     // https://demo.ziprecipes.net/tres-leches/
     class ZipRecipesZL : IPeruser
     {
+        protected Puller puller;
+        public ZipRecipesZL()
+        {
+            this.puller = new Puller();
+        }
+
         IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
-            return driver.FindElement(By.ClassName("zlrecipe"));
+            return this.puller.GetOne(driver, "zlrecipe");
         }
 
         List<DirectionGroup> IPeruser.GetDirectionGroups(IWebElement container)
         {
-            var directionElements = container.FindElements(By.ClassName("instruction"));
+            var directionElements = this.puller.GetMany(container, "instruction");
             var directions = new List<Direction>();
             foreach (var element in directionElements)
             {
-                directions.Add(new Direction { Text = CleanText(element.Text) });
+                directions.Add(new Direction { Text = this.puller.CleanText(element.Text) });
             }
             return new List<DirectionGroup>() { new DirectionGroup { Label = "", Directions = directions } };
         }
 
         List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
-            var ingredientElements = container.FindElements(By.ClassName("ingredient"));
+            var ingredientElements = this.puller.GetMany(container, "ingredient");
             var ingredients = new List<Ingredient>();
             foreach (var element in ingredientElements)
             {
-                ingredients.Add(new Ingredient { Name = CleanText(element.Text) });
+                ingredients.Add(new Ingredient { Name = this.puller.CleanText(element.Text) });
             }
             return new List<IngredientGroup>() { new IngredientGroup { Label = "", Ingredients = ingredients } };
         }
 
         string IPeruser.GetName(IWebElement container)
         {
-            return CleanText(container.FindElement(By.Id("zlrecipe-title")).Text);
+            return this.puller.GetText(container, "zlrecipe-title", PullType.BY_ID);
         }
 
         string IPeruser.GetNotes(IWebElement container)
         {
-            return CleanText(container.FindElement(By.Id("zlrecipe-notes-list")).Text);
+            return this.puller.GetText(container, "zlrecipe-notes-list", PullType.BY_ID);
         }
 
         string IPeruser.GetServingSize(IWebElement container)
         {
-            var yieldContainer = container.FindElements(By.ClassName("yield")).FirstOrDefault();
+            var yieldContainer = this.puller.GetOne(container, "yield");
             if(yieldContainer == null)
             {
                 return "";
             }
 
-            var amount = yieldContainer.FindElement(By.ClassName("zrdn-serving-adjustment-input")).GetAttribute("value");
-            return CleanText(amount + " " + yieldContainer.Text.Replace("Imperial","").Replace("Metric",""));
+            var amount = this.puller.GetAttribute(yieldContainer, "zrdn-serving-adjustment-input", "value");
+            return this.puller.CleanText(amount + " " + this.puller.CleanText(yieldContainer.Text.Replace("Imperial","").Replace("Metric","")));
         }
 
         string IPeruser.GetSummary(IWebElement container)
         {
-            return CleanText(container.FindElement(By.Id("zlrecipe-summary")).Text);
+            return this.puller.GetText(container, "zlrecipe-summary", PullType.BY_ID);
         }
 
         List<Tag> IPeruser.GetTags(IWebElement container)
@@ -71,12 +74,12 @@ namespace Scrap.Peruser
             var categoryTag = new Tag
             {
                 Label = "Category",
-                Value = CleanText(container.FindElements(By.Id("zlrecipe-category")).FirstOrDefault()?.Text?.Replace("Category:","")?.Replace("Category", "") ?? "")
+                Value = this.puller.CleanText(this.puller.GetText(container, "zlrecipe-category",PullType.BY_ID).Replace("Category:","").Replace("Category", ""))
             };
             var cuisineTag = new Tag
             {
                 Label = "Cuisine",
-                Value = CleanText(container.FindElements(By.Id("zlrecipe-cuisine")).FirstOrDefault()?.Text?.Replace("Cuisine:", "")?.Replace("Cuisine", "") ?? "")
+                Value = this.puller.CleanText(this.puller.GetText(container, "zlrecipe-cuisine", PullType.BY_ID).Replace("Cuisine:", "").Replace("Cuisine", ""))
             };
 
             if (categoryTag.Value != "")
@@ -101,25 +104,25 @@ namespace Scrap.Peruser
             var prepTime = new Time
             {
                 Label = "Prep Time",
-                Amount = GetGuts(container, "prep_time"),
+                Amount = this.puller.GetText(container, "prep_time"),
                 Unit = ""
             };
             var cookTime = new Time
             {
                 Label = "Cook Time",
-                Amount = GetGuts(container, "cook_time"),
+                Amount = this.puller.GetText(container, "cook_time"),
                 Unit = ""
             };
             var totalTime = new Time
             {
                 Label = "Total Time",
-                Amount = CleanText(container.FindElements(By.Id("zlrecipe-total-time")).FirstOrDefault()?.Text?.Replace("Total Time:", "") ?? ""),
+                Amount = this.puller.CleanText(this.puller.GetText(container, "zlrecipe-total-time", PullType.BY_ID).Replace("Total Time:", "").Replace("Total Time", "")),
                 Unit = ""
             };
             var otherTotalTime = new Time
             {
                 Label = "Total Time",
-                Amount = GetGuts(container, "total-time"),
+                Amount = this.puller.GetText(container, "total-time"),
                 Unit = ""
             };
 
@@ -141,44 +144,6 @@ namespace Scrap.Peruser
             }
 
             return timeGroup;
-        }
-
-
-
-        protected string GetGuts(IWebElement element, string className)
-        {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.Text
-                    ?? firstElement.Text;
-            }
-
-            return CleanText(text);
-        }
-
-        protected string CleanText(string text)
-        {
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("<p>", "")
-                .Replace("</p>", "")
-                .Replace("<br>", "")
-                .Replace("</br>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-            text = Regex.Replace(text, "<span .*>", "");
-
-            return text.Trim();
         }
     }
 }

@@ -1,10 +1,7 @@
 ﻿using OpenQA.Selenium;
 using Scrap.Model;
-using System;
+using Scrap.Peruser.Utilities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Scrap.Peruser
 {
@@ -13,14 +10,20 @@ namespace Scrap.Peruser
     // https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/
     class CookedRecipe : IPeruser
     {
+        protected Puller puller;
+        public CookedRecipe()
+        {
+            this.puller = new Puller();
+        }
+
         IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
-            return driver.FindElement(By.ClassName("cp_recipe"));
+            return this.puller.GetOne(driver, "cp_recipe");
         }
 
         string IPeruser.GetName(IWebElement container)
         {
-            return GetGuts(container, "entry-title");
+            return this.puller.GetText(container, "entry-title");
         }
 
         string IPeruser.GetNotes(IWebElement container)
@@ -30,35 +33,35 @@ namespace Scrap.Peruser
 
         string IPeruser.GetServingSize(IWebElement container)
         {
-            return container.FindElement(By.ClassName("cooked-servings")).FindElement(By.TagName("a")).Text;
+            return this.puller.GetText(this.puller.GetOne(container, "cooked-servings"), "a", PullType.BY_TAG);
         }
 
         string IPeruser.GetSummary(IWebElement container)
         {
-            return GetGuts(container, "cooked-recipe-excerpt");
+            return this.puller.GetText(container, "cooked-recipe-excerpt");
         }
 
         List<Tag> IPeruser.GetTags(IWebElement container)
         {
             var tags = new List<Tag>();
 
-            var categoryElement = container.FindElements(By.ClassName("cooked-category")).FirstOrDefault();
+            var categoryElement = this.puller.GetOne(container, "cooked-category");
             if (categoryElement != null)
             {
                 tags.Add(new Tag
                 {
-                    Label = categoryElement.FindElement(By.ClassName("cooked-meta-title")).Text,
-                    Value = categoryElement.FindElement(By.TagName("a")).Text,
+                    Label = this.puller.GetText(categoryElement, "cooked-meta-title"),
+                    Value = this.puller.GetText(categoryElement, "a", PullType.BY_TAG),
                 });
             }
 
-            var difficultyElement = container.FindElements(By.ClassName("cooked-difficulty-level")).FirstOrDefault();
+            var difficultyElement = this.puller.GetOne(container, "cooked-difficulty-level");
             if (difficultyElement != null)
             {
                 tags.Add(new Tag
                 {
-                    Label = difficultyElement.FindElement(By.ClassName("cooked-meta-title")).Text,
-                    Value = difficultyElement.FindElement(By.TagName("span")).Text,
+                    Label = this.puller.GetText(difficultyElement, "cooked-meta-title"),
+                    Value = this.puller.GetText(difficultyElement, "span", PullType.BY_TAG),
                 });
             }
 
@@ -69,11 +72,11 @@ namespace Scrap.Peruser
         {
             var times = new List<Time>();
 
-            var timeElements = container.FindElements(By.ClassName("cooked-time"));
+            var timeElements = this.puller.GetMany(container, "cooked-time");
             foreach(var element in timeElements)
             {
-                var label = CleanText(element.FindElement(By.ClassName("cooked-meta-title")).Text);
-                var text = CleanText(element.Text.Replace(label, ""));
+                var label = this.puller.GetText(element, "cooked-meta-title");
+                var text = this.puller.CleanText(element.Text.Replace(label, ""));
                 times.Add(new Time
                 {
                     Label = label,
@@ -90,8 +93,8 @@ namespace Scrap.Peruser
 
         List<DirectionGroup> IPeruser.GetDirectionGroups(IWebElement container)
         {
-            var directionGroupContainer = container.FindElement(By.ClassName("cooked-recipe-directions"));
-            var allElements = directionGroupContainer.FindElements(By.XPath("*"));
+            var directionGroupContainer = this.puller.GetOne(container, "cooked-recipe-directions");
+            var allElements = this.puller.GetMany(directionGroupContainer, "*", PullType.BY_XPATH);
 
             var groups = new List<DirectionGroup>();
 
@@ -109,7 +112,7 @@ namespace Scrap.Peruser
                     // Start Next Ingredient Group
                     currentGroup = new DirectionGroup
                     {
-                        Label = CleanText(element.Text),
+                        Label = this.puller.CleanText(element.Text),
                         Directions = new List<Direction>()
                     };
                 }
@@ -127,7 +130,7 @@ namespace Scrap.Peruser
 
                     currentGroup.Directions.Add(new Direction
                     {
-                        Text = GetGuts(element, "cooked-dir-content")
+                        Text = this.puller.GetText(element, "cooked-dir-content")
                     });
                 }
             }
@@ -142,8 +145,8 @@ namespace Scrap.Peruser
 
         List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
-            var ingredientGroupContainer = container.FindElement(By.ClassName("cooked-recipe-ingredients"));
-            var allElements = ingredientGroupContainer.FindElements(By.XPath("*"));
+            var ingredientGroupContainer = this.puller.GetOne(container, "cooked-recipe-ingredients");
+            var allElements = this.puller.GetMany(ingredientGroupContainer, "*", PullType.BY_XPATH);
 
             var groups = new List<IngredientGroup>();
 
@@ -161,7 +164,7 @@ namespace Scrap.Peruser
                     // Start Next Ingredient Group
                     currentGroup = new IngredientGroup
                     {
-                        Label = CleanText(element.Text),
+                        Label = this.puller.CleanText(element.Text),
                         Ingredients = new List<Ingredient>()
                     };
                 }
@@ -179,9 +182,9 @@ namespace Scrap.Peruser
 
                     currentGroup.Ingredients.Add(new Ingredient
                     {
-                        Amount = CleanText(element.FindElements(By.ClassName("cooked-ing-amount")).FirstOrDefault()?.GetAttribute("data-decimal") ?? ""),
-                        Unit = CleanText(element.FindElements(By.ClassName("cooked-ing-measurement")).FirstOrDefault()?.Text ?? ""),
-                        Name = CleanText(element.FindElements(By.ClassName("cooked-ing-name")).FirstOrDefault()?.Text ?? ""),
+                        Amount = this.puller.GetAttribute(element, "cooked-ing-amount", "data-decimal"),
+                        Unit = this.puller.GetText(element, "cooked-ing-measurement"),
+                        Name = this.puller.GetText(element, "cooked-ing-name"),
                         Note = ""
                     });
                 }
@@ -193,46 +196,6 @@ namespace Scrap.Peruser
             }
 
             return groups;
-        }
-
-
-
-
-
-        private string GetGuts(IWebElement element, string className)
-        {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.Text
-                    ?? firstElement.Text;
-            }
-
-            return CleanText(text);
-        }
-
-        private string CleanText(string text)
-        {
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("<p>", "")
-                .Replace("</p>", "")
-                .Replace("<br>", "")
-                .Replace("</br>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-            text = Regex.Replace(text, "<span .*>", "");
-
-            return text.Trim();
         }
     }
 }

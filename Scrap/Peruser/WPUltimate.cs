@@ -1,42 +1,46 @@
 ﻿using OpenQA.Selenium;
 using Scrap.Model;
-using System;
+using Scrap.Peruser.Utilities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Scrap.Peruser
 {
     // Based on https://www.wpultimaterecipe.com/docs/demo/
     class WPUltimate : IPeruser
     {
+        protected Puller puller;
+        public WPUltimate()
+        {
+            this.puller = new Puller();
+        }
+
         IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
-            return driver.FindElement(By.ClassName("wpurp-container"));
+            return this.puller.GetOne(driver, "wpurp-container");
         }
 
         string IPeruser.GetName(IWebElement container)
         {
-            return GetGuts(container, "wpurp-recipe-title");
+            return this.puller.GetText(container, "wpurp-recipe-title");
         }
 
         string IPeruser.GetSummary(IWebElement container)
         {
-            return GetGuts(container, "wpurp-recipe-description");
+            return this.puller.GetText(container, "wpurp-recipe-description");
         }
 
         List<Tag> IPeruser.GetTags(IWebElement container)
         {
-            var tagsContainer = container.FindElement(By.ClassName("wpurp-recipe-tags"));
-            var tagTables = tagsContainer.FindElements(By.TagName("table"));
+            var tagsContainer = this.puller.GetOne(container, "wpurp-recipe-tags");
+            var tagTables = this.puller.GetMany(tagsContainer, "table", PullType.BY_TAG);
             
             var tags = new List<Tag>();
             foreach (var tableElement in tagTables)
             {
                 var tag = new Tag
                 {
-                    Label = GetGuts(tableElement, "wpurp-recipe-tag-name"),
-                    Value = GetGuts(tableElement, "wpurp-recipe-tag-terms")
+                    Label = this.puller.GetText(tableElement, "wpurp-recipe-tag-name"),
+                    Value = this.puller.GetText(tableElement, "wpurp-recipe-tag-terms")
                 };
 
                 if(tag.Label != "" && tag.Value != "")
@@ -49,9 +53,7 @@ namespace Scrap.Peruser
 
         string IPeruser.GetServingSize(IWebElement container)
         {
-            return container.FindElements(By.ClassName("advanced-adjust-recipe-servings"))
-                    .FirstOrDefault()?.GetAttribute("data-start-servings")
-                    ?? "";
+            return this.puller.GetAttribute(container, "advanced-adjust-recipe-servings", "data-start-servings");
         }
 
         TimeGroup IPeruser.GetTimeGroup(IWebElement container)
@@ -64,20 +66,20 @@ namespace Scrap.Peruser
             var prepTime = new Time
             {
                 Label = "Prep Time",
-                Amount = GetGuts(container, "wpurp-recipe-prep-time"),
-                Unit = GetGuts(container, "wpurp-recipe-prep-time-text")
+                Amount = this.puller.GetText(container, "wpurp-recipe-prep-time"),
+                Unit = this.puller.GetText(container, "wpurp-recipe-prep-time-text")
             };
             var cookTime = new Time
             {
                 Label = "Cook Time",
-                Amount = GetGuts(container, "wpurp-recipe-cook-time"),
-                Unit = GetGuts(container, "wpurp-recipe-cook-time-text")
+                Amount = this.puller.GetText(container, "wpurp-recipe-cook-time"),
+                Unit = this.puller.GetText(container, "wpurp-recipe-cook-time-text")
             };
             var totalTime = new Time
             {
                 Label = "Total Time",
-                Amount = GetGuts(container, "wpurp-recipe-total-time"),
-                Unit = GetGuts(container, "wpurp-recipe-total-time-text")
+                Amount = this.puller.GetText(container, "wpurp-recipe-total-time"),
+                Unit = this.puller.GetText(container, "wpurp-recipe-total-time-text")
             };
 
             if (prepTime.Amount != "")
@@ -99,24 +101,32 @@ namespace Scrap.Peruser
         List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
             var ingredientGroups = new List<IngredientGroup>();
-            var ingredientGroupElements = container.FindElements(By.ClassName("wpurp-recipe-ingredient-container"));
+            var ingredientGroupElements = this.puller.GetMany(container, "wpurp-recipe-ingredient-group-container");
             foreach (var groupElement in ingredientGroupElements)
             {
-                var label = GetGuts(groupElement, "wpurp-recipe-ingredient-group");
+                var label = this.puller.GetText(groupElement, "wpurp-recipe-ingredient-group");
 
-                var ingredientElements = groupElement.FindElements(By.ClassName("wpurp-recipe-ingredient"));
+                var ingredientElements = this.puller.GetMany(groupElement, "wpurp-recipe-ingredient");
                 var ingredients = new List<Ingredient>();
                 foreach (var element in ingredientElements)
                 {
-                    ingredients.Add(new Ingredient
+                    var ingredient = new Ingredient
                     {
-                        Amount = GetGuts(element, "wpurp-recipe-ingredient-quantity"),
-                        Unit = GetGuts(element, "wpurp-recipe-ingredient-unit"),
-                        Name = GetGuts(element, "wpurp-recipe-ingredient-name"),
-                        Note = GetGuts(element, "wpurp-recipe-ingredient-notes"),
-                    });
+                        Amount = this.puller.GetText(element, "wpurp-recipe-ingredient-quantity"),
+                        Unit = this.puller.GetText(element, "wpurp-recipe-ingredient-unit"),
+                        Name = this.puller.GetText(element, "wpurp-recipe-ingredient-name"),
+                        Note = this.puller.GetText(element, "wpurp-recipe-ingredient-notes"),
+                    };
+
+                    if (ingredient.Amount != "" || ingredient.Unit != "" || ingredient.Name != "" || ingredient.Note != "")
+                    {
+                        ingredients.Add(ingredient);
+                    }
                 }
-                ingredientGroups.Add(new IngredientGroup { Label = label, Ingredients = ingredients });
+                if (ingredients.Count > 0)
+                {
+                    ingredientGroups.Add(new IngredientGroup { Label = label, Ingredients = ingredients });
+                }
             }
 
             return ingredientGroups;
@@ -125,16 +135,16 @@ namespace Scrap.Peruser
         List<DirectionGroup> IPeruser.GetDirectionGroups(IWebElement container)
         {
             var directionGroups = new List<DirectionGroup>();
-            var directionGroupElements = container.FindElements(By.ClassName("wpurp-recipe-instruction-group-container"));
+            var directionGroupElements = this.puller.GetMany(container, "wpurp-recipe-instruction-group-container");
             foreach (var groupElement in directionGroupElements)
             {
-                var label = GetGuts(groupElement, "wpurp-recipe-instruction-group");
+                var label = this.puller.GetText(groupElement, "wpurp-recipe-instruction-group");
 
-                var directionElements = container.FindElements(By.ClassName("wpurp-recipe-instruction"));
+                var directionElements = this.puller.GetMany(container, "wpurp-recipe-instruction");
                 var directions = new List<Direction>();
                 foreach (var element in directionElements)
                 {
-                    directions.Add(new Direction { Text = GetGuts(element, "wpurp-recipe-instruction-text") });
+                    directions.Add(new Direction { Text = this.puller.GetText(element, "wpurp-recipe-instruction-text") });
                 }
                 directionGroups.Add(new DirectionGroup { Label = label, Directions = directions });
             }
@@ -144,41 +154,7 @@ namespace Scrap.Peruser
 
         string IPeruser.GetNotes(IWebElement container)
         {
-            return GetGuts(container, "wpurp-recipe-notes");
+            return this.puller.GetText(container, "wpurp-recipe-notes");
         }
-
-
-
-
-        private string GetGuts(IWebElement element, string className)
-        {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.GetAttribute("innerHTML")
-                    ?? firstElement.GetAttribute("innerHTML");
-            }
-
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("<p>", "")
-                .Replace("</p>", "")
-                .Replace("<br>", "")
-                .Replace("</br>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-
-            return text;
-        }
-
     }
 }

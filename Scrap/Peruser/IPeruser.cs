@@ -11,14 +11,12 @@ namespace Scrap.Peruser
         {
             try
             {
-                FindContainerElement(driver);
+                return FindContainerElement(driver) != null;
             }
             catch (NoSuchElementException)
             {
                 return false;
             }
-
-            return true;
         }
 
         protected IWebElement FindContainerElement(IWebDriver driver);
@@ -29,7 +27,7 @@ namespace Scrap.Peruser
 
             return new Recipe
             {
-                Source = driver.Url,
+                Source = this.GetType().Name + " | " + driver.Url,
                 Name = GetName(container),
                 Summary = GetSummary(container),
                 Tags = GetTags(container),

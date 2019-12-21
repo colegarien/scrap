@@ -1,10 +1,7 @@
 ﻿using OpenQA.Selenium;
 using Scrap.Model;
-using System;
+using Scrap.Peruser.Utilities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Scrap.Peruser
 {
@@ -13,30 +10,36 @@ namespace Scrap.Peruser
     // https://demo.wpzoom.com/recipe-card-blocks/2019/02/06/recipe-card-classic-style/
     class RecipeCardBlocks : IPeruser
     {
+        protected Puller puller;
+        public RecipeCardBlocks()
+        {
+            this.puller = new Puller();
+        }
+
         IWebElement IPeruser.FindContainerElement(IWebDriver driver)
         {
-            return driver.FindElement(By.ClassName("wp-block-wpzoom-recipe-card-block-recipe-card"));
+            return this.puller.GetOne(driver, "wp-block-wpzoom-recipe-card-block-recipe-card");
         }
 
         string IPeruser.GetName(IWebElement container)
         {
-            return GetGuts(container, "recipe-card-title");
+            return this.puller.GetText(container, "recipe-card-title");
         }
 
         string IPeruser.GetNotes(IWebElement container)
         {
-            return GetGuts(container, "recipe-card-notes-list");
+            return this.puller.GetText(container, "recipe-card-notes-list");
         }
 
         string IPeruser.GetServingSize(IWebElement container)
         {
-            var detailsItemElements = container.FindElement(By.ClassName("details-items")).FindElements(By.ClassName("detail-item"));
+            var detailsItemElements = this.puller.GetMany(this.puller.GetOne(container, "details-items"), "detail-item");
             foreach(var detailElement in detailsItemElements)
             {
-                if (detailElement.FindElement(By.ClassName("detail-item-label")).Text.Contains("Serving"))
+                if (this.puller.GetText(detailElement, "detail-item-label").Contains("Serving"))
                 {
-                    var number = detailElement.FindElement(By.ClassName("detail-item-adjustable-servings")).GetAttribute("value");
-                    return CleanText(number + " " + GetGuts(detailElement, "detail-item-unit"));
+                    var number = this.puller.GetAttribute(detailElement, "detail-item-adjustable-servings", "value");
+                    return this.puller.CleanText(number + " " + this.puller.GetText(detailElement, "detail-item-unit"));
                 }
             }
 
@@ -45,7 +48,7 @@ namespace Scrap.Peruser
 
         string IPeruser.GetSummary(IWebElement container)
         {
-            return GetGuts(container, "recipe-card-summary");
+            return this.puller.GetText(container, "recipe-card-summary");
         }
 
         List<Tag> IPeruser.GetTags(IWebElement container)
@@ -53,17 +56,17 @@ namespace Scrap.Peruser
             var courseTag = new Tag
             {
                 Label = "Course",
-                Value = CleanText(container.FindElements(By.ClassName("recipe-card-course")).FirstOrDefault()?.FindElement(By.TagName("mark"))?.Text ?? "")
+                Value = this.puller.GetText(this.puller.GetOne(container, "recipe-card-course"), "mark", PullType.BY_TAG)
             };
             var cuisineTag = new Tag
             {
                 Label = "Cuisine",
-                Value = CleanText(container.FindElements(By.ClassName("recipe-card-cuisine")).FirstOrDefault()?.FindElement(By.TagName("mark"))?.Text ?? "")
+                Value = this.puller.GetText(this.puller.GetOne(container, "recipe-card-cuisine"), "mark", PullType.BY_TAG)
             };
             var difficulyTag = new Tag
             {
                 Label = "Difficulty",
-                Value = CleanText(container.FindElements(By.ClassName("recipe-card-difficulty")).FirstOrDefault()?.FindElement(By.TagName("mark"))?.Text ?? "")
+                Value = this.puller.GetText(this.puller.GetOne(container, "recipe-card-difficulty"), "mark", PullType.BY_TAG)
             };
 
             var tags = new List<Tag>();
@@ -90,17 +93,18 @@ namespace Scrap.Peruser
                 Times = new List<Time>()
             };
 
-            var detailsItemElements = container.FindElement(By.ClassName("details-items")).FindElements(By.ClassName("detail-item"));
+            var detailsItemElements = this.puller.GetMany(this.puller.GetOne(container, "details-items"), "detail-item");
             foreach (var detailElement in detailsItemElements)
             {
-                var labelElement = detailElement.FindElement(By.ClassName("detail-item-label"));
-                if (labelElement.Text.Contains("time") || labelElement.Text.Contains("Time"))
+                var labelElement = this.puller.GetOne(detailElement, "detail-item-label");
+                var labelText = this.puller.CleanText(labelElement?.Text ?? "");
+                if (labelText.Contains("time") || labelText.Contains("Time"))
                 {
                     timeGroup.Times.Add(new Time
                     {
-                        Label = CleanText(labelElement.Text),
-                        Amount = GetGuts(detailElement, "detail-item-value"),
-                        Unit = GetGuts(detailElement, "detail-item-unit")
+                        Label = labelText,
+                        Amount = this.puller.GetText(detailElement, "detail-item-value"),
+                        Unit = this.puller.GetText(detailElement, "detail-item-unit")
                     });
                 }
             }
@@ -116,12 +120,12 @@ namespace Scrap.Peruser
                 Directions = new List<Direction>()
             };
 
-            var directionElements = container.FindElements(By.ClassName("direction-step"));
+            var directionElements = this.puller.GetMany(container, "direction-step");
             foreach(var element in directionElements)
             {
                 directionGroup.Directions.Add(new Direction
                 {
-                    Text = CleanText(element.Text)
+                    Text = this.puller.CleanText(element.Text)
                 });
             }
 
@@ -133,8 +137,8 @@ namespace Scrap.Peruser
 
         List<IngredientGroup> IPeruser.GetIngredientGroups(IWebElement container)
         {
-            var ingredientGroupContainer = container.FindElement(By.ClassName("ingredients-list"));
-            var allElements = ingredientGroupContainer.FindElements(By.XPath("*"));
+            var ingredientGroupContainer = this.puller.GetOne(container, "ingredients-list");
+            var allElements = this.puller.GetMany(ingredientGroupContainer, "*", PullType.BY_XPATH);
 
             var groups = new List<IngredientGroup>();
 
@@ -152,7 +156,7 @@ namespace Scrap.Peruser
                     // Start Next Ingredient Group
                     currentGroup = new IngredientGroup
                     {
-                        Label = CleanText(element.Text),
+                        Label = this.puller.CleanText(element.Text),
                         Ingredients = new List<Ingredient>()
                     };
                 }
@@ -170,9 +174,9 @@ namespace Scrap.Peruser
 
                     currentGroup.Ingredients.Add(new Ingredient
                     {
-                        Amount = CleanText(element.FindElements(By.ClassName("wpzoom-rcb-ingredient-amount")).FirstOrDefault()?.Text ?? ""),
-                        Unit = CleanText(element.FindElements(By.ClassName("wpzoom-rcb-ingredient-unit")).FirstOrDefault()?.Text ?? ""),
-                        Name = CleanText(element.FindElements(By.ClassName("wpzoom-rcb-ingredient-name")).FirstOrDefault()?.Text ?? ""),
+                        Amount = this.puller.GetText(element, "wpzoom-rcb-ingredient-amount"),
+                        Unit = this.puller.GetText(element, "wpzoom-rcb-ingredient-unit"),
+                        Name = this.puller.GetText(element, "wpzoom-rcb-ingredient-name"),
                         Note = ""
                     });
                 }
@@ -184,48 +188,6 @@ namespace Scrap.Peruser
             }
 
             return groups;
-        }
-
-
-
-
-
-
-
-        private string GetGuts(IWebElement element, string className)
-        {
-            var firstElement = element.FindElements(By.ClassName(className))
-                .FirstOrDefault();
-            var text = "";
-            if (firstElement != null)
-            {
-                text = firstElement.FindElements(By.ClassName(className))
-                    .FirstOrDefault()?.Text
-                    ?? firstElement.Text;
-            }
-
-            return CleanText(text);
-        }
-
-        private string CleanText(string text)
-        {
-            text = text.Replace("&amp;", "&")
-                .Replace("&nbsp;", " ")
-                .Replace("<span style=\"display: block;\">", "")
-                .Replace("</span>", "")
-                .Replace("</a>", "")
-                .Replace("<p>", "")
-                .Replace("</p>", "")
-                .Replace("<br>", "")
-                .Replace("</br>", "")
-                .Replace("  ", " ")
-                .Trim();
-
-            // remove links
-            text = Regex.Replace(text, "<a .*>", "");
-            text = Regex.Replace(text, "<span .*>", "");
-
-            return text.Trim();
         }
     }
 }
