@@ -31,7 +31,7 @@ namespace Scrap.Peruser
             return this.puller.GetText(container, "recipe-card-notes-list");
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             var detailsItemElements = this.puller.GetMany(this.puller.GetOne(container, "details-items"), "detail-item");
             foreach(var detailElement in detailsItemElements)

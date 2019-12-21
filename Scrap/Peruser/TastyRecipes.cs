@@ -72,7 +72,7 @@ namespace Scrap.Peruser
             return tags;
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             return this.puller.CleanText(this.puller.GetText(container, "tasty-recipes-yield").Replace("1x",""));
         }

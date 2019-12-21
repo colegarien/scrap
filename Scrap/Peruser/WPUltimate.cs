@@ -51,7 +51,7 @@ namespace Scrap.Peruser
             return tags;
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             return this.puller.GetAttribute(container, "advanced-adjust-recipe-servings", "data-start-servings");
         }

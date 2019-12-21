@@ -58,7 +58,7 @@ namespace Scrap.Peruser
             return tags;
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             return this.puller.GetText(container, "wprm-recipe-servings");
         }

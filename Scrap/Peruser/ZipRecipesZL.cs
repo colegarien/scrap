@@ -51,7 +51,7 @@ namespace Scrap.Peruser
             return this.puller.GetText(container, "zlrecipe-notes-list", PullType.BY_ID);
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             var yieldContainer = this.puller.GetOne(container, "yield");
             if(yieldContainer == null)

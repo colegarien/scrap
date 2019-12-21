@@ -11,7 +11,7 @@ namespace Scrap.Model
         public string Summary { get; set; }
 
         public List<Tag> Tags { get; set; }
-        public string ServingSize { get; set; }
+        public string Yield { get; set; }
 
         public TimeGroup TimeGroup { get; set; }
 

@@ -31,7 +31,7 @@ namespace Scrap.Peruser
                 Name = GetName(container),
                 Summary = GetSummary(container),
                 Tags = GetTags(container),
-                ServingSize = GetServingSize(container),
+                Yield = GetYield(container),
                 TimeGroup = GetTimeGroup(container),
                 IngredientGroups = GetIngredientGroups(container),
                 DirectionGroups = GetDirectionGroups(container),
@@ -42,7 +42,7 @@ namespace Scrap.Peruser
         protected string GetName(IWebElement container);
         protected string GetSummary(IWebElement container);
         protected List<Tag> GetTags(IWebElement container);
-        protected string GetServingSize(IWebElement container);
+        protected string GetYield(IWebElement container);
         protected TimeGroup GetTimeGroup(IWebElement container);
         protected List<IngredientGroup> GetIngredientGroups(IWebElement container);
         protected List<DirectionGroup> GetDirectionGroups(IWebElement container);

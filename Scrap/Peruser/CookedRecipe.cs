@@ -31,7 +31,7 @@ namespace Scrap.Peruser
             return "";
         }
 
-        string IPeruser.GetServingSize(IWebElement container)
+        string IPeruser.GetYield(IWebElement container)
         {
             return this.puller.GetText(this.puller.GetOne(container, "cooked-servings"), "a", PullType.BY_TAG);
         }

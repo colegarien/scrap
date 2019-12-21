@@ -6,9 +6,8 @@ namespace Scrap
 {
     class Program
     {
-        // TODO Rename "Serving Size" to "Yield"
-        // Refactor things into a more portable class library
-        // Dependency Injection!?
+        // TODO Refactor things into a more portable class library
+        // TODO Dependency Injection!?
 
         static void Main(string[] args)
         {
@@ -51,7 +50,7 @@ namespace Scrap
             {
                 Console.WriteLine(tag.Label + ": " + tag.Value);
             }
-            Console.WriteLine("Serving Size: " + recipe.ServingSize);
+            Console.WriteLine("Serves: " + recipe.Yield);
 
             foreach (var time in recipe.TimeGroup.Times)
             {
