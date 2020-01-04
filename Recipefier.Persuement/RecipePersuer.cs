@@ -1,6 +1,6 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using Recipefier.Persuement.Model;
+using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser;
 using System;
 

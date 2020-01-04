@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Recipefier.Persuement.Model
+namespace Recipefier.Domain.Model
 {
     public class IngredientGroup
     {

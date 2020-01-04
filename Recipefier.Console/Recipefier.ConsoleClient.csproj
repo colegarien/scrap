@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Recipefier.Domain\Recipefier.Domain.csproj" />
     <ProjectReference Include="..\Recipefier.Persuement\Recipefier.Persuement.csproj" />
   </ItemGroup>
 

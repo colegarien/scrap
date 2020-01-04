@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Model
+namespace Recipefier.Domain.Model
 {
     public class TimeGroup
     {

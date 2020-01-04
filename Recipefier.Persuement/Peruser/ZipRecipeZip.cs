@@ -1,5 +1,5 @@
 ﻿using OpenQA.Selenium;
-using Recipefier.Persuement.Model;
+using Recipefier.Domain.Model;
 using System.Collections.Generic;
 
 namespace Recipefier.Persuement.Peruser

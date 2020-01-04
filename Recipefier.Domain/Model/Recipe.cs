@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Scrap.Model
+namespace Recipefier.Domain.Model
 {
-    class Recipe
+    public class Recipe
     {
         public string Name { get; set; }
         public string Source { get; set; }

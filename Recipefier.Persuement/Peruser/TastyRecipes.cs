@@ -1,5 +1,5 @@
 ﻿using OpenQA.Selenium;
-using Recipefier.Persuement.Model;
+using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;

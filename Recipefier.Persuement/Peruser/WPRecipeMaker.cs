@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using OpenQA.Selenium;
-using Recipefier.Persuement.Model;
+using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 
 namespace Recipefier.Persuement.Peruser

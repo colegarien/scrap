@@ -1,4 +1,5 @@
 ﻿using System;
+using Recipefier.Domain.Model;
 using Recipefier.Persuement;
 
 namespace Recipefier.ConsoleClient
@@ -12,7 +13,7 @@ namespace Recipefier.ConsoleClient
         }
 
 
-        private static void RenderRecipe(Persuement.Model.Recipe recipe)
+        private static void RenderRecipe(Recipe recipe)
         {
             Console.WriteLine("Recipe: " + recipe.Name);
             Console.WriteLine("Source: " + recipe.Source);
