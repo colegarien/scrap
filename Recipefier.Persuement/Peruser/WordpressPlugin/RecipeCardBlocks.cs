@@ -3,14 +3,14 @@ using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // https://demo.wpzoom.com/recipe-card-blocks/2019/03/26/new-style-design/
     // https://demo.wpzoom.com/recipe-card-blocks/2019/03/26/kid-friendly-oil-free-vegan-pancakes/
     // https://demo.wpzoom.com/recipe-card-blocks/2019/02/06/recipe-card-classic-style/
     class RecipeCardBlocks : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public RecipeCardBlocks()
         {
             puller = new Puller();

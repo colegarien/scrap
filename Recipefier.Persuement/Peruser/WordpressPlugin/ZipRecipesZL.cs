@@ -3,12 +3,12 @@ using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // https://demo.ziprecipes.net/tres-leches/
     class ZipRecipesZL : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public ZipRecipesZL()
         {
             puller = new Puller();

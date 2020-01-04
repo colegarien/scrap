@@ -3,12 +3,12 @@ using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // Based on https://www.wpultimaterecipe.com/docs/demo/
     class WPUltimate : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public WPUltimate()
         {
             puller = new Puller();

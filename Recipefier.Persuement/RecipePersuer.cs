@@ -1,41 +1,46 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using Recipefier.Domain.Model;
+﻿using Recipefier.Domain.Model;
+using Recipefier.Persuement.Exception;
 using Recipefier.Persuement.Peruser;
-using System;
 
 namespace Recipefier.Persuement
 {
     public class RecipePersuer
     {
+        private readonly WebDriverFactory webDriverFactory;
+        private readonly Factory persuerFactory;
+
+        public RecipePersuer()
+        {
+            this.webDriverFactory = new WebDriverFactory();
+            this.persuerFactory = new Factory();
+        }
+
+        /// <summary>
+        /// Persue recipe at given URL
+        /// </summary>
+        /// <param name="url">URL for Recipe</param>
+        /// <returns>Persued Recipe</returns>
+        /// <exception cref="Recipefier.Persuement.Exception.CouldNotPersueException">Thrown when Recipe cannot be Persued</exception>
         public Recipe Persue(string url)
         {
-            var options = new ChromeOptions();
-            options.AddArgument("disable-translate");
-            options.AddArgument("disable-infobars");
-            options.AddArgument("headless");
-            options.AddArgument("disable-gpu");
-            options.AddArgument("window-size=1024,768");
-            options.AddArgument("log-level=1"); // Warnings and up
-            var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
-            IWebDriver driver = new ChromeDriver(serice, options);
+            using (var driver = webDriverFactory.Get())
+            {
+                GoToSite(driver, url);
+                var peruser = persuerFactory.GetPeruser(driver);
+                return peruser.Peruse(driver);
+            }
+        }
 
-            var persuerFactory = new Factory();
-
-            var recipe = new Recipe();
+        private void GoToSite(OpenQA.Selenium.IWebDriver driver, string url)
+        {
             try
             {
                 driver.Navigate().GoToUrl(url);
-                var peruser = persuerFactory.GetPeruser(driver);
-                recipe = peruser.Peruse(driver);
             }
-            catch (Exception)
+            catch (System.Exception e)
             {
-                // hmmm
+                throw new CouldNotPersueException("URL is invalid", e);
             }
-
-            driver.Close();
-            return recipe;
         }
     }
 }

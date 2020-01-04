@@ -3,7 +3,7 @@ using OpenQA.Selenium;
 using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
 
     // Based on https://thesaltymarshmallow.com/homemade-belgian-waffle-recipe/
@@ -11,7 +11,7 @@ namespace Recipefier.Persuement.Peruser
     // and https://demo.wprecipemaker.com/recipe-taxonomies/
     class WPRecipeMaker : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public WPRecipeMaker()
         {
             puller = new Puller();

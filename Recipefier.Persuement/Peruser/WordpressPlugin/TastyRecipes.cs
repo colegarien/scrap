@@ -4,14 +4,14 @@ using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // BASED on https://cookieandkate.com/best-carrot-cake-recipe/#tasty-recipes-33706
     // AND https://cookiesandcups.com/perfect-snickerdoodles/
     // ALSO https://pinchofyum.com/sweet-potato-peanut-soup
     class TastyRecipes : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public TastyRecipes()
         {
             puller = new Puller();

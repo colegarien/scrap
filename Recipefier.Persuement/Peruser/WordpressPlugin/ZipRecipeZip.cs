@@ -2,7 +2,7 @@
 using Recipefier.Domain.Model;
 using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // https://demo.ziprecipes.net/best-guacamole-ever/
     // https://demo.ziprecipes.net/elegant-and-delicious-dessert/

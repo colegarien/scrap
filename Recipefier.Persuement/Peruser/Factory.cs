@@ -1,14 +1,24 @@
 ﻿using OpenQA.Selenium;
-using System;
+using Recipefier.Persuement.Exception;
+using Recipefier.Persuement.Peruser.WordpressPlugin;
 
 namespace Recipefier.Persuement.Peruser
 {
     class Factory
     {
-        IPeruser[] perusers;
+        private readonly IPeruser[] perusers;
+
         public Factory()
         {
-            perusers = new IPeruser[] { new WPRecipeMaker(), new WPUltimate(), new TastyRecipes(), new ZipRecipesZL(), new ZipRecipeZip(), new CookedRecipe(), new RecipeCardBlocks() };
+            perusers = new IPeruser[] {
+                new WPRecipeMaker(), 
+                new WPUltimate(), 
+                new TastyRecipes(), 
+                new ZipRecipesZL(), 
+                new ZipRecipeZip(), 
+                new CookedRecipe(), 
+                new RecipeCardBlocks()
+            };
         }
 
         public IPeruser GetPeruser(IWebDriver driver)
@@ -21,7 +31,7 @@ namespace Recipefier.Persuement.Peruser
                 }
             }
 
-            throw new NotImplementedException("No Peruser for " + driver.Url);
+            throw new CouldNotPersueException("No applicable Persuer");
         }
     }
 }

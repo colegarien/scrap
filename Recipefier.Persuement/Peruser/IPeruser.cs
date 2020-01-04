@@ -1,7 +1,7 @@
 ﻿using OpenQA.Selenium;
 using Recipefier.Domain.Model;
+using Recipefier.Persuement.Exception;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Recipefier.Persuement.Peruser
 {
@@ -23,20 +23,27 @@ namespace Recipefier.Persuement.Peruser
 
         public Recipe Peruse(IWebDriver driver)
         {
-            var container = FindContainerElement(driver);
-
-            return new Recipe
+            try
             {
-                Source = GetType().Name + " | " + driver.Url,
-                Name = GetName(container),
-                Summary = GetSummary(container),
-                Tags = GetTags(container),
-                Yield = GetYield(container),
-                TimeGroup = GetTimeGroup(container),
-                IngredientGroups = GetIngredientGroups(container),
-                DirectionGroups = GetDirectionGroups(container),
-                Notes = GetNotes(container)
-            };
+                var container = FindContainerElement(driver);
+
+                return new Recipe
+                {
+                    Source = GetType().Name + " | " + driver.Url,
+                    Name = GetName(container),
+                    Summary = GetSummary(container),
+                    Tags = GetTags(container),
+                    Yield = GetYield(container),
+                    TimeGroup = GetTimeGroup(container),
+                    IngredientGroups = GetIngredientGroups(container),
+                    DirectionGroups = GetDirectionGroups(container),
+                    Notes = GetNotes(container)
+                };
+            }
+            catch(System.Exception e)
+            {
+                throw new CouldNotPersueException("Failure during Persuement", e);
+            }
         }
 
         protected string GetName(IWebElement container);

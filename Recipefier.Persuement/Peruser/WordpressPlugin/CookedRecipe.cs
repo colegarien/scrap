@@ -3,14 +3,14 @@ using Recipefier.Domain.Model;
 using Recipefier.Persuement.Peruser.Utilities;
 using System.Collections.Generic;
 
-namespace Recipefier.Persuement.Peruser
+namespace Recipefier.Persuement.Peruser.WordpressPlugin
 {
     // https://demos.boxystudio.com/cooked/recipe/peanut-butter-sandwich-cookies/
     // https://demos.boxystudio.com/cooked/recipe/brisket-root-vegetables/
     // https://demos.boxystudio.com/cooked/recipe/sausage-hash-brown-casserole/
     class CookedRecipe : IPeruser
     {
-        protected Puller puller;
+        protected readonly Puller puller;
         public CookedRecipe()
         {
             puller = new Puller();
