@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipefier.Persuement", "Recipefier.Persuement\Recipefier.Persuement.csproj", "{5C8BE1AE-A2D0-4646-BC28-80AA2F77F1F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recipefier.Persuement", "Recipefier.Persuement\Recipefier.Persuement.csproj", "{5C8BE1AE-A2D0-4646-BC28-80AA2F77F1F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipefier.ConsoleClient", "Recipefier.Console\Recipefier.ConsoleClient.csproj", "{043D63C5-E770-4529-AF17-BDDDE01EF22A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recipefier.ConsoleClient", "Recipefier.Console\Recipefier.ConsoleClient.csproj", "{043D63C5-E770-4529-AF17-BDDDE01EF22A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5C8BE1AE-A2D0-4646-BC28-80AA2F77F1F0} = {5C8BE1AE-A2D0-4646-BC28-80AA2F77F1F0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipefier.Domain", "Recipefier.Domain\Recipefier.Domain.csproj", "{A627F748-3784-45A0-B4DD-41AF0D7A2AF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recipefier.Domain", "Recipefier.Domain\Recipefier.Domain.csproj", "{A627F748-3784-45A0-B4DD-41AF0D7A2AF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipefier.API", "Recipefier.API\Recipefier.API.csproj", "{94E21D8D-7E6C-4496-A6B2-CC4DB2B07180}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{A627F748-3784-45A0-B4DD-41AF0D7A2AF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A627F748-3784-45A0-B4DD-41AF0D7A2AF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A627F748-3784-45A0-B4DD-41AF0D7A2AF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94E21D8D-7E6C-4496-A6B2-CC4DB2B07180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94E21D8D-7E6C-4496-A6B2-CC4DB2B07180}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94E21D8D-7E6C-4496-A6B2-CC4DB2B07180}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94E21D8D-7E6C-4496-A6B2-CC4DB2B07180}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
