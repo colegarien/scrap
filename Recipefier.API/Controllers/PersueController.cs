@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Recipefier.Domain.Model;
 using Recipefier.Persuement;
+using System.Web;
 
 namespace Recipefier.API.Controllers
 {
@@ -22,7 +23,7 @@ namespace Recipefier.API.Controllers
         [Route("queue/{url:required}")]
         public Recipe Queue(string url)
         {
-            return persuer.Persue(url);
+            return persuer.Persue(HttpUtility.UrlDecode(url));
         }
     }
 }

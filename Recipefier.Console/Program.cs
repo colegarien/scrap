@@ -29,7 +29,8 @@ namespace Recipefier.ConsoleClient
                 "https://www.wpultimaterecipe.com/docs/demo/",
                 "https://demo.ziprecipes.net/tres-leches/",
                 "https://demo.ziprecipes.net/best-guacamole-ever/",
-                "https://demo.ziprecipes.net/elegant-and-delicious-dessert/"
+                "https://demo.ziprecipes.net/elegant-and-delicious-dessert/",
+                "https://toriavey.com/toris-kitchen/falafel/"
             };
 
             foreach (var url in urls)

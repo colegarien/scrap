@@ -18,11 +18,11 @@ namespace Recipefier.Persuement
             var serice = ChromeDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Google\\", "chromedriver.exe");
             return new ChromeDriver(serice, options);
 
-            var options = new FirefoxOptions();
-            //options.AddArguments("-headless");
+            /*var options = new FirefoxOptions();
+            options.AddArguments("-headless");
 
             var service = FirefoxDriverService.CreateDefaultService(@"C:\\Program Files (x86)\\Mozilla Firefox\\", "geckodriver.exe");
-            return new FirefoxDriver(service, options);
+            return new FirefoxDriver(service, options);*/
         }
     }
 }

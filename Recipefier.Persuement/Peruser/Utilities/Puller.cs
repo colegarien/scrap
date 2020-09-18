@@ -19,7 +19,7 @@ namespace Recipefier.Persuement.Peruser.Utilities
     {
         public IWebElement GetOne(ISearchContext element, string key, PullType type = PullType.BY_CLASS)
         {
-            return GetMany(element, key, type).FirstOrDefault();
+            return GetMany(element, key, type).LastOrDefault();
         }
 
         public List<IWebElement> GetMany(ISearchContext element, string key, PullType type = PullType.BY_CLASS)
